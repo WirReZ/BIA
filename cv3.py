@@ -15,7 +15,7 @@ import Alg_Swarm
 import Alg_DiffEvo
 import Alg_HillClimb
 import Alg_AlternativSOMA
-
+import Alg_EvolutionStrategy
 
 #############TSP
 import TSP_Population
@@ -25,7 +25,14 @@ import TSP_City
 import Alg_Ant
 
 ###### MAIN PROGRAM
-task = 'tsp'
+task = 'alg'
+
+import math
+
+def distance(c1, city):
+    distance_x = c1.x - city.x
+    distance_y = c1.y - city.y
+    return math.sqrt(pow(distance_x, 2) + pow(distance_y, 2))
 
 
 def animation(frame, points, alg):
@@ -52,7 +59,8 @@ if task == 'alg':
     #algorithm = Alg_Soma.Soma(4, 10, 1.1, 0.11, 0.6, spaces, func)
     #algorithm = Alg_Swarm.Swarm(15, 80, spaces, func, 2, 2, 1, 0.8, 0.6)
     #algorithm = Alg_DiffEvo.DiffEvo(10, 0.7, 0.5, 25, spaces, func)
-    algorithm = Alg_AlternativSOMA.AlternativSoma(4, 10, 1.1, 0.11, 0.5, spaces, func, 4, 10)
+    #algorithm = Alg_AlternativSOMA.AlternativSoma(4, 10, 1.1, 0.11, 0.5, spaces, func, 4, 10)
+    algorithm = Alg_EvolutionStrategy.Alg_EvolutionStrategy(20, 0.817, 100, spaces, func)
 
     X = np.arange(spaces[0], spaces[1], 0.1)
     Y = np.arange(spaces[0], spaces[1], 0.1)
@@ -71,15 +79,19 @@ elif task == 'tsp':
 
     cities = []
     section = "ANT"
-
     file = open('tsp.txt')
     i = 0
+
     for line in file.readlines():
         line_array = [int(s) for s in line.split()]
-        cities.append(TSP_City.TSP_City(line_array[0]-1, line_array[1], line_array[2]))
+        cities.append(TSP_City.TSP_City(i, line_array[1], line_array[2]))
         i += 1
-        if i == 11:
-            break
+        #if i == 25:
+        #    break
+    distances = np.ndarray((len(cities), len(cities)))
+    for i in range(0, len(cities)):
+        for j in range(0,len(cities)):
+            distances[i, j] = distance(cities[i], cities[j])
 
     if section == "GA":
         population = TSP_Population.TSP_Population(cities, 100)
@@ -101,27 +113,24 @@ elif task == 'tsp':
         plt.plot(pointx, pointy, '--o')
         plt.show()
     else:
-        algorithm = Alg_Ant.Alg_Ant(cities, 0.2, 0.6, 100, 0.6, 0)
 
-        for i in range(250): # 100 generaci
+        algorithm = Alg_Ant.Alg_Ant(cities, 1.4, 1.9, 100, 0.4, 40, distances)
+
+        for i in range(40): # 100 generaci
             algorithm.run()
             print(algorithm.best_distance)
+           # print(algorithm.pheromones)
 
         pointx = []
         pointy = []
-        for i in range(0, len(algorithm.best_pop.visited)):
+        for i in range(0, len(algorithm.best_pop.visited_cities)):
            # print(algorithm.best_pop.visited[i])
-            pointx.append(algorithm.best_pop.visited[i].x)
-            pointy.append(algorithm.best_pop.visited[i].y)
+            pointx.append(algorithm.best_pop.visited_cities[i].x)
+            pointy.append(algorithm.best_pop.visited_cities[i].y)
 
-        #pointx.append(algorithm.best_pop.visited[0].x)
-        #pointy.append(algorithm.best_pop.visited[0].y)
 
         plt.plot(pointx, pointy, '--o')
         plt.show()
-
-        #    print(i)
-            #algorithm = algorithm.run()
 
 
 

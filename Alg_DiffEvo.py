@@ -45,11 +45,11 @@ class DiffEvo:
                     j_rand = random.randrange(0, len(self.points))
                     if rand_num < self.param_cr or j_rand == x:
                         trial[x] = random_neighbour[2][x] + self.param_f*(random_neighbour[0][x]-random_neighbour[1][x])
-                    # Meze :/
-                    if trial[x] > self.spaces[1]:
-                        trial[x] = self.spaces[1]
-                    if trial[x] < self.spaces[0]:
-                        trial[x] = self.spaces[0]
+                        # Meze :/
+                        if trial[x] > self.spaces[1]:
+                            trial[x] = self.spaces[1]
+                        if trial[x] < self.spaces[0]:
+                            trial[x] = self.spaces[0]
 
                 trial[len(self.spaces)] = self.cost_function([trial[0], trial[1]])
                 if trial[len(self.spaces)] < self.points[j][len(self.spaces)]:

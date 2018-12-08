@@ -10,7 +10,7 @@ class TSP_City:
     def distance_to(self, city):
         distance_x = self.x - city.x
         distance_y = self.y - city.y
-        return math.sqrt((distance_x * distance_x) + (distance_y * distance_y))
+        return math.sqrt(pow(distance_x, 2) + pow(distance_y, 2))
 
     def __repr__(self):
         return str(self.id)

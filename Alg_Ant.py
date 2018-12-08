@@ -22,14 +22,13 @@ class Ant:
         attractive = []
         sum_total_attractive = 0
 
-
         for i in range(0, len(self.allowed_cities)):
             distances.append((i, 1/self.actual_city.distance_to(self.allowed_cities[i])))
 
         distances = sorted(distances, key=lambda k: k[1])
 
         for i in range(0, len(distances)):
-            pheromon = self.alg.pheromones[self.actual_position][i]
+            pheromon = self.alg.pheromones[self.actual_city.id][self.allowed_cities[distances[i][0]].id]
             atr = pow(pheromon, self.alg.param_alfa)*pow(distances[i][1], self.alg.param_beta)
             attractive.append((distances[i][0], atr))
             sum_total_attractive += atr
@@ -39,11 +38,10 @@ class Ant:
         next_selection = -1
 
         for i in range(0, len(attractive)):
-            prob = attractive[i][1] / sum_total_attractive
-            if rand_roulette < actual+prob:
+            actual += attractive[i][1] / sum_total_attractive
+            if actual >= rand_roulette:
                 next_selection = i
                 break
-            actual += prob
 
         #Move to next Point !!!
         self.actual_position = attractive[next_selection][0]
@@ -60,22 +58,23 @@ class Ant:
     def get_distance(self):
         self.total_distance = 0
         for i in range(0, len(self.visited_cities)-1):
-            self.total_distance += self.visited_cities[i].distance_to(self.visited_cities[(i+1)])
+            self.total_distance += self.alg.distances[self.visited_cities[i].id, self.visited_cities[i+1].id] #self.visited_cities[i].distance_to(self.visited_cities[(i+1)])
         return self.total_distance
 
 
 class Alg_Ant:
-    def __init__(self, cities, alfa, beta, Q, ro, pop_size):
+    def __init__(self, cities, alfa, beta, Q, ro, pop_size, distances):
         self.all_cities = cities
         self.param_alfa = alfa
         self.param_beta = beta
         self.param_q = Q
         self.param_ro = ro
         self.ants = []
-        self.pheromones = numpy.full((len(self.all_cities), len(self.all_cities)), 0.02)
+        self.pheromones = numpy.full((len(self.all_cities), len(self.all_cities)), 0.2) # default pheromone
         self.best_distance = 0
         self.best_pop = None
         self.pop_size = pop_size
+        self.distances = distances
 
 
     def run(self):
@@ -100,17 +99,17 @@ class Alg_Ant:
                 ant.next_move()
 
         self.pheromones *= self.param_ro
+
         for i in range(0, len(self.ants)):
             ant = self.ants[i]
-            distance = ant.get_distance()
 
-            if self.best_pop is None or distance < self.best_distance:
+            if self.best_pop is None or self.ants[i].get_distance() < self.best_distance:
                 self.best_pop = copy.copy(self.ants[i])
-                self.best_distance = distance
+                self.best_distance = self.ants[i].get_distance()
 
             for j in range(0, len(ant.visited_cities)-1):
-                self.pheromones[ant.visited_cities[j].id][ant.visited_cities[j+1].id] += self.param_q / distance
-                self.pheromones[ant.visited_cities[j+1].id][ant.visited_cities[j].id] += self.param_q / distance
+                self.pheromones[ant.visited_cities[j].id][ant.visited_cities[j+1].id] += self.param_q / self.ants[i].get_distance()
+                self.pheromones[ant.visited_cities[j+1].id][ant.visited_cities[j].id] += self.param_q / self.ants[i].get_distance()
 
 
 
